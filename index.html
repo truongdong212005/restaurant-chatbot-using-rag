@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Chat Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        .chat-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            max-width: 80%;
+            line-height: 1.5;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .message p {
+            margin: 0 0 10px 0;
+        }
+        .message p:last-child {
+            margin-bottom: 0;
+        }
+        .user-message {
+            background-color: #DCF8C6;
+            margin-left: auto;
+            margin-right: 10px;
+            border-bottom-right-radius: 4px;
+        }
+        .assistant-message {
+            background-color: #E8E8E8;
+            margin-right: auto;
+            margin-left: 10px;
+            border-bottom-left-radius: 4px;
+        }
+        .input-container {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            background-color: white;
+            border-top: 1px solid #eee;
+        }
+        .input-container textarea {
+            flex-grow: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            resize: none;
+            height: 50px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        .input-container textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76,175,80,0.2);
+        }
+        .input-container button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .input-container button:hover {
+            background-color: #45a049;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 10px 0;
+            color: #666;
+            font-style: italic;
+        }
+        .timestamp {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 8px;
+            text-align: right;
+        }
+        /* Text formatting styles */
+        .message strong, .message b {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .message em, .message i {
+            font-style: italic;
+            color: #34495e;
+        }
+        .message u {
+            text-decoration: underline;
+            text-decoration-color: #7f8c8d;
+        }
+        .message h3 {
+            margin: 10px 0;
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+        .message ul, .message ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .message code {
+            background-color: rgba(0,0,0,0.05);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .message blockquote {
+            border-left: 3px solid #95a5a6;
+            margin: 10px 0;
+            padding-left: 10px;
+            color: #7f8c8d;
+        }
+        .role-indicator {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍕 Restaurant Chat Assistant</h1>
+        <div class="chat-container" id="chatContainer">
+            <div class="message assistant-message">
+                <div class="role-indicator">Assistant</div>
+                <div class="content">
+                    <p>👋 Hello! I'm your <strong>restaurant assistant</strong>.</p>
+                    <p>I can help you with:</p>
+                    <ul>
+                        <li>Menu recommendations</li>
+                        <li>Customer reviews</li>
+                        <li>Special dishes</li>
+                        <li>And more!</li>
+                    </ul>
+                    <p><em>How can I assist you today?</em></p>
+                </div>
+                <div class="timestamp">Just now</div>
+            </div>
+        </div>
+        <div class="loading" id="loading">Processing your question...</div>
+        <div class="input-container">
+            <textarea 
+                id="question" 
+                placeholder="Type your question here... (Use *bold*, _italic_, or ~underline~ for formatting)"
+                rows="2"
+            ></textarea>
+            <button onclick="askQuestion()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        let chatHistory = [
+            {
+                role: 'assistant',
+                content: `👋 Hello! I'm your **restaurant assistant**.
+
+I can help you with:
+- Menu recommendations
+- Customer reviews
+- Special dishes
+- And more!
+
+*How can I assist you today?*`
+            }
+        ];
+
+        function formatTimestamp() {
+            return new Date().toLocaleTimeString();
+        }
+
+        function formatMessage(content) {
+            // Convert markdown-like syntax to HTML
+            return content
+                .replace(/\n/g, '</p><p>')  // Convert newlines to paragraphs
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')  // Italic
+                .replace(/~(.*?)~/g, '<u>$1</u>')  // Underline
+                .replace(/`(.*?)`/g, '<code>$1</code>')  // Code
+                .replace(/>(.*?)(\n|$)/g, '<blockquote>$1</blockquote>')  // Blockquote
+                .replace(/- (.*?)(\n|$)/g, '<li>$1</li>')  // List items
+                .replace(/<li>.*?<\/li>/g, match => `<ul>${match}</ul>`)  // Wrap list items in ul
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');  // Links
+        }
+
+        function addMessage(content, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'assistant-message'}`;
+            
+            const roleDiv = document.createElement('div');
+            roleDiv.className = 'role-indicator';
+            roleDiv.textContent = isUser ? 'You' : 'Assistant';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'content';
+            contentDiv.innerHTML = `<p>${formatMessage(content)}</p>`;
+            
+            const timestampDiv = document.createElement('div');
+            timestampDiv.className = 'timestamp';
+            timestampDiv.textContent = formatTimestamp();
+            
+            messageDiv.appendChild(roleDiv);
+            messageDiv.appendChild(contentDiv);
+            messageDiv.appendChild(timestampDiv);
+            
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function askQuestion() {
+            const questionInput = document.getElementById('question');
+            const question = questionInput.value.trim();
+            if (!question) {
+                alert('Please enter a question');
+                return;
+            }
+
+            addMessage(question, true);
+            chatHistory.push({ role: 'user', content: question });
+
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+            questionInput.value = '';
+
+            try {
+                const response = await fetch('http://localhost:8000/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        messages: chatHistory,
+                        new_question: question
+                    })
+                });
+
+                const data = await response.json();
+                addMessage(data.answer);
+                chatHistory.push({ role: 'assistant', content: data.answer });
+            } catch (error) {
+                addMessage('Error: Could not get an answer. Please make sure the server is running.');
+                console.error('Error:', error);
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // Allow pressing Enter to submit (Shift+Enter for new line)
+        document.getElementById('question').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                askQuestion();
+            }
+        });
+    </script>
+</body>
+</html> 
