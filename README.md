@@ -138,12 +138,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Restaurant reviews dataset contributors
 - LangChain and FastAPI communities
 
-## Contact
-
-Your Name - [@yourtwitter](https://twitter.com/yourtwitter)
-
-Project Link: [https://github.com/yourusername/simple-rag-restaurant](https://github.com/yourusername/simple-rag-restaurant)
-
 ## Troubleshooting
 
 - If you see an error about missing dependencies, make sure your virtual environment is activated and all packages are installed.
