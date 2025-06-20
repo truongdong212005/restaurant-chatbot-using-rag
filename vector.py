@@ -4,7 +4,7 @@ from langchain_core.documents import Document
 import os
 import pandas as pd
 
-df = pd.read_csv("/Users/macaz/miniconda3/coding/project/simple-rag-restaurant/realistic_restaurant_reviews.csv")
+df = pd.read_csv("realistic_restaurant_reviews.csv")
 embeddings = OllamaEmbeddings(model="hf.co/CompendiumLabs/bge-base-en-v1.5-gguf:latest")
 
 db_location = "./chroma_langchain_db"
