@@ -62,7 +62,7 @@ You'll know the virtual environment is activated when you see `(venv)` in your t
 
 2. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/simple-rag-restaurant.git
+git clone https://github.com/truongdongto212005/simple-rag-restaurant.git
 cd simple-rag-restaurant
 ```
 
